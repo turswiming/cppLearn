@@ -164,7 +164,7 @@ int ASet<Elem>::GetElements(Elem array[])
 {
     for (int i = 0; i < length; i++)
     {
-        array[i] = elem[1];
+        array[i] = elem[i];
     }
 
     return length;
