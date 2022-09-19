@@ -29,6 +29,7 @@ public:
 
     // //将集合s中的元素合并到当前集合中
     // virtual void operator+=(Set<Elem> &s) = 0;
+    // virtual void operator-=(Set<Elem> &s) = 0;
 };
 
 //请实现一个继承上述抽象类的集合类ASet，并利用该集合类完成集合操作。
@@ -39,6 +40,7 @@ public:
     ASet()
     {
         fence = 0;
+        length = 0;
     }
     ASet(Elem elem[], int length)
     {
@@ -49,8 +51,8 @@ public:
     ~ASet()
     {
         delete elem;
-        delete length;
-        delete fence;
+        // delete length;
+        // delete fence;
     }
     //在集合中插入一个元素 e
     void Insert(const Elem &e);
@@ -73,8 +75,11 @@ public:
     //按进入集合的次序，依次打印输出集合中的元素
     void Print();
 
+    bool HaveThisElem(Elem e);
     // //将集合s中的元素合并到当前集合中
-    // void operator+=(ASet<Elem> &s);
+    void operator+=(ASet<Elem> &s);
+    // //将集合s中的元素合并到当前集合中
+    void operator-=(ASet<Elem> &s);
 
 private:
     Elem *elem;
@@ -100,18 +105,18 @@ bool ASet<Elem>::Remove(const Elem &e)
 {
     for (int i = 0; i < length; i++)
     {
-        if ((&e == &elem[i]) || e == elem[i])
+        if (e == elem[i])
         {
             Elem *leftList = new Elem[i];
             GetSubList(elem, 0, i, leftList);
-            Print(leftList, i);
+            // Print(leftList, i);
 
             Elem *rightList = new Elem[length - i - 1];
             GetSubList(elem, i + 1, length, rightList);
-            Print(rightList, length - i - 1);
+            // Print(rightList, length - i - 1);
 
             Elem *elemfinal = new Elem[length - 1];
-            Addlist(leftList, rightList, this->length, length - i, elemfinal);
+            Addlist(leftList, rightList, i, length - i - 1, elemfinal);
             elem = elemfinal;
             length -= 1;
             return true;
@@ -135,10 +140,11 @@ bool ASet<Elem>::GetFirstElement(Elem &e)
 }
 
 template <class Elem>
-bool ASet<Elem>::GetLastElement(Elem &e) {
+bool ASet<Elem>::GetLastElement(Elem &e)
+{
     try
     {
-        e = elem[length-1];
+        e = elem[length - 1];
         return true;
     }
     catch (const std::exception &e)
@@ -154,9 +160,13 @@ int ASet<Elem>::GetSize()
 }
 
 template <class Elem>
-int ASet<Elem>::GetElements(Elem elem[])
+int ASet<Elem>::GetElements(Elem array[])
 {
-    elem = this->elem;
+    for (int i = 0; i < length; i++)
+    {
+        array[i] = elem[1];
+    }
+
     return length;
 }
 
@@ -165,15 +175,41 @@ void ASet<Elem>::Print()
 {
     Print(elem, length);
 }
+template <class Elem>
+bool ASet<Elem>::HaveThisElem(Elem e)
+{
+    for (size_t i = 0; i < length; i++)
+    {
+        if (e == elem[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+template <class Elem>
+void ASet<Elem>::operator+=(ASet<Elem> &s)
+{
+    for (size_t i = 0; i < s.GetSize(); i++)
+    {
+        if (!this->HaveThisElem(s.elem[i]))
+        {
+            this->Insert(s.elem[i]);
+        }
+    }
 
-// template <class Elem>
-// void ASet<Elem>::operator+=(ASet<Elem> &s)
-// {
-//     Elem elem[length + s.length] = Addlist(this->elem,s,this->length,s.length);
-//     ASet a = new ASet(elem,length + s.length);
-//     return a;
-// }
 
+}
+template <class Elem>
+void ASet<Elem>::operator-=(ASet<Elem> &s)
+{
+    Elem *a = new Elem(1000);
+    s.GetElements(a);
+    for (int i = 0; i < s.GetSize(); i++)
+    {
+        this->Remove(a[i]);
+    }
+}
 template <class Elem>
 void ASet<Elem>::Addlist(Elem *elem1, Elem *elem2, int length1, int length2, Elem *out)
 {
@@ -212,18 +248,40 @@ void ASet<Elem>::Print(Elem *e, int length)
     for (int i = 0; i < length; i++)
     {
 
-        cout << "index:\t" << i << "\t"
-             << "value:\t" << e[i] << endl;
+        cout << e[i] << ' ';
     }
+    cout << endl;
 }
 int main()
 {
-    int i[] = {1, 23, 23, 543, 46, 54};
-    int *y = i;
-    ASet<int> *aset = new ASet<int>(y, 6);
-    // aset->Print();
-    aset->Remove(46);
-    // aset->Print();
+    ASet<int> a[3];
+    for (size_t i = 0; i < 3; i++)
+    {
+        int temp;
+        do
+        {
+            cin >> temp;
+            a[i].Insert(temp);
 
+        } while (cin.get() != '\n');
+    }
+    //输出结果分为5行，第1行输出集合S1中第一个元素和最后一个元素；
+
+    int temp1;
+    a[0].GetFirstElement(temp1);
+    int temp2;
+    a[0].GetLastElement(temp2);
+
+    cout << temp1 << ' ' << temp2 << endl;
+    //第2行输出集合S2的元素的个数；
+    cout << a[1].GetSize() << endl;
+    //第3行按进入集合的先后顺序输出S3中的所有元素；
+    a[2].Print();
+    //第4行，将集合S2合并到S1后，按进入集合的先后次序打印输出S1中的元素；
+    a[0] += a[1];
+    a[0].Print();
+    //第5行，将集合S2减去集合S3后，按进入集合的先后次序打印输出S2中的元素。
+    a[1] -= a[2];
+    a[1].Print();
     return 0;
 }
