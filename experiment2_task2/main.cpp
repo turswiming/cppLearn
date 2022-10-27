@@ -29,11 +29,11 @@ class Library
 public:
     Library()
     {
-        fence = tail = head = new Link<Book>;
+        fence = tail = head = new Link<Book>();
         leftcnt = 0;
         rightcnt = 0;
     };
-    bool Add(Book &book)
+    bool Add(Book book)
     {
         if (FindElem(book))
         {
@@ -56,22 +56,33 @@ public:
         {
             return false;
         };
-        Link<Book> * nodeToDelate;
-        FindElem(book, &nodeToDelate);
-        Link<Book> *previousNode;
-        GetFrontElem(nodeToDelate, &previousNode);
-        previousNode->next = nodeToDelate->next;
+        Link<Book> *nodeToDelate;
+        FindElem(book, nodeToDelate);
+        Link<Book> *previousNode = NULL;
+        GetFrontElem(*nodeToDelate, previousNode);
+        (*previousNode).next = nodeToDelate->next;
+        if (fence == nodeToDelate)
+        {
+            fence = previousNode;
+        }
 
         // delete (&nodeToDelate);
 
         return true;
     };
-    bool Find(string name, string author)
+    int Find(string name)
     {
-        Book book;
-        book.name = name;
-        book.author = author;
-        return FindElem(book);
+        int count = 0;
+        Link<Book> *elemReadNow = head;
+        while (elemReadNow->next != NULL)
+        {
+            elemReadNow = elemReadNow->next;
+            if (name == elemReadNow->element.name)
+            {
+                count += 1;
+            }
+        }
+        return count;
     };
 
 private:
@@ -80,20 +91,20 @@ private:
     Link<Book> *fence; // Last element on left
     int leftcnt;       // Size of left
     int rightcnt;      // Size of right
-    bool FindElem(Book bookToFind)
+    bool FindElem(Book &bookToFind)
     {
-        Link<Book> link = new Link<Book>();
+        Link<Book> *link = new Link<Book>();
         return FindElem(bookToFind, link);
     }
-    bool GetFrontElem(Link<Book> &thisElem, Link<Book> &frontElem)
+    bool GetFrontElem(Link<Book> &thisElem, Link<Book> *&frontElem)
     {
         Link<Book> *elemReadNow = head;
-        Link<Book> previousElem;
+        Link<Book> *previousElem;
         while (elemReadNow->next != NULL)
         {
             previousElem = elemReadNow;
             elemReadNow = elemReadNow->next;
-            if (&thisElem == elemReadNow)
+            if (Equal(thisElem.element, elemReadNow->element))
             {
                 frontElem = previousElem;
                 return true;
@@ -101,14 +112,20 @@ private:
         }
         return false;
     };
-    bool FindElem(Book bookToFind, Link<Book> *goal)
+    bool Equal(Book book1, Book book2)
+    {
+        return (book1.name == book2.name) && (book1.author == book2.author);
+    }
+    bool FindElem(Book bookToFind, Link<Book> *&goal)
     {
 
         Link<Book> *elemReadNow = head;
         while (elemReadNow->next != NULL)
         {
             elemReadNow = elemReadNow->next;
-            if ((bookToFind.name == elemReadNow->element.name) && (bookToFind.author == elemReadNow->element.author))
+            if (
+                (bookToFind.name == elemReadNow->element.name) &&
+                (bookToFind.author == elemReadNow->element.author))
             {
                 goal = elemReadNow;
                 return true;
@@ -120,15 +137,57 @@ private:
 int main()
 {
     Library *library = new Library();
-    Book *book = new Book();
-    book->author = "haha";
-    book->name = "why school of design so fuzzy";
-    library->Add(*book);
-    bool b = library->Find("why school of design so fuzzy", "haha");
-    cout << "删除前"<<b << endl;
-    library->Remove("why school of design so fuzzy", "haha");
-    b = library->Find("why school of design so fuzzy", "haha");
-    cout << "删除后"<<b << endl;
 
+    int count;
+    cin >> count;
+    for (int i = 0; i < count; i++)
+    {
+        char a[30] = {0};
+        char b[30] = {0};
+        char c[30] = {0};
+        float d;
+        scanf("\n");
+        scanf("%[^ ]", &a);
+        if (string(a) == "ADD")
+        {
+            // scanf("%s",b);
+            scanf(" (%[^)]) (%[^)]) (%e)", &b, &c, &d);
+            Book *book = new Book();
+            book->author = c;
+            book->name = b;
+            book->price = d;
+            bool result = library->Add(*book);
+            if (result)
+            {
+                cout << "SUCCESS" << endl;
+            }
+            else
+            {
+                cout << "FAIL" << endl;
+            }
+        }
+        if (string(a) == "REMOVE")
+        {
+            scanf(" (%[^)]) (%[^)])", &b,&c);
+            bool result = library->Remove(b,c);
+            if (result)
+            {
+                cout << "SUCCESS" << endl;
+            }
+            else
+            {
+                cout << "FAIL" << endl;
+            }
+        }
+        if (string(a) == "FIND")
+        {
+            scanf(" (%[^)])", &b);
+
+            int result = library->Find(b);
+            cout << result << endl;
+        }
+    }
+
+    
     return 0;
 }
